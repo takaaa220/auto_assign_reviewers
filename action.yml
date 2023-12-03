@@ -1,0 +1,12 @@
+name: "Assign Reviewer"
+description: "Automatically assign reviewers to pull requests based on labels."
+inputs:
+  github-token:
+    description: "GitHub token for authorization."
+    required: true
+  mappings:
+    description: 'Comma-separated label-reviewers mapping (e.g., "Backend:[Team1 Backend,Team2 Backend],Frontend:[Team1 Frontend]")'
+    required: true
+runs:
+  using: "node20"
+  main: "src/index.mjs"
