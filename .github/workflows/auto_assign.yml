@@ -16,6 +16,10 @@ jobs:
         with:
           node-version: 20
 
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
       - name: Install dependencies
         run: pnpm install
 
@@ -23,4 +27,4 @@ jobs:
         run: node src/index.mjs
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          ASSIGN_MAPPINGS: "aaa:[x1,x2],bbb:[y1]"
+          ASSIGN_MAPPINGS: "aaa:[takaaa220],bbb:[takaaa220]"
