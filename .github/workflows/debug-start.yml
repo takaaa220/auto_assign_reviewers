@@ -1,5 +1,12 @@
 name: Debug Start
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+    inputs:
+      pull_request_number:
+        description: "Pull Request Number"
+        type: string
+        required: true
+
 jobs:
   run:
     runs-on: ubuntu-latest

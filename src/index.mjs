@@ -2,14 +2,6 @@ import { getInput, setFailed } from "@actions/core";
 import { getOctokit, context } from "@actions/github";
 
 async function run() {
-  let pullRequestInfo;
-  try {
-    pullRequestInfo = getPullRequestInfo();
-  } catch (error) {
-    console.info(error.message);
-    return;
-  }
-
   // get inputs
   let inputs;
   try {
@@ -17,6 +9,14 @@ async function run() {
   } catch (error) {
     setFailed(`setting is invalid: ${error.message}`);
 
+    return;
+  }
+
+  let pullRequestInfo;
+  try {
+    pullRequestInfo = getPullRequestInfo(inputs.pullRequestNumber);
+  } catch (error) {
+    console.info(error.message);
     return;
   }
 
@@ -56,10 +56,16 @@ async function run() {
 }
 
 /**
+ * @param {number | undefined} pullRequestNumber
  * @returns {{labels: string[], pullRequestNumber: number, ownerName: string, repoName: string; author: string}}
  */
-function getPullRequestInfo() {
-  const pullRequest = context.payload.pull_request;
+function getPullRequestInfo(pullRequestNumber) {
+  let pullRequest = context.payload.pull_request;
+  if (pullRequestNumber !== undefined) {
+    pullRequest = context.payload.pull_requests.find(
+      (pr) => pr.number === pullRequestNumber
+    );
+  }
   if (!pullRequest) {
     throw new Error("No pull request found.");
   }
@@ -79,20 +85,30 @@ function getPullRequestInfo() {
 }
 
 /**
- * @returns {{assignMappingsStr: string, githubToken: string}}
+ * @returns {{assignMappingsStr: string, githubToken: string, pullRequestNumber: number | undefined}}
  */
 function getInputs(isDev) {
   if (isDev) {
     return {
       assignMappingsStr: process.env.ASSIGN_MAPPINGS,
       githubToken: process.env.GITHUB_TOKEN,
+      pullRequestNumber: process.env.PULL_REQUEST_NUMBER
+        ? Number(process.env.PULL_REQUEST_NUMBER)
+        : undefined,
     };
   }
 
   const assignMappingsStr = getInput("assign-mappings", { required: true });
   const githubToken = getInput("githubToken", { required: true });
+  const pullRequestNumber = getInput("pull-request-number");
 
-  return { assignMappingsStr, githubToken };
+  return {
+    assignMappingsStr,
+    githubToken,
+    pullRequestNumber: pullRequestNumber
+      ? Number(pullRequestNumber)
+      : undefined,
+  };
 }
 
 /**

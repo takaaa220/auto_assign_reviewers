@@ -7,6 +7,10 @@ inputs:
   assign-mappings:
     description: 'Comma-separated label-reviewers mapping (e.g., "Backend:[Team1 Backend,Team2 Backend],Frontend:[Team1 Frontend]")'
     required: true
+  pull-request-number:
+    description: "Pull request number. Specify this parameter if you run this on a workflow that doesn't have pull_request trigger."
+    required: false
+
 runs:
   using: "node20"
   main: "src/index.mjs"
