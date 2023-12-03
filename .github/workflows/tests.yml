@@ -21,10 +21,17 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-  test:
-    needs: setup
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Run tests
+      - name: Run unit tests
         run: pnpm test
+
+      - name: Run assign test1
+        run: node src/index.mjs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ASSIGN_MAPPINGS: "aaa:[takaaa220],bbb:[takaaa220]"
+
+      - name: Run assign test2
+        run: node src/index.mjs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ASSIGN_MAPPINGS: "unknown:[u]"
