@@ -13,7 +13,7 @@ async function run() {
   // get inputs
   let inputs;
   try {
-    inputs = getInputs();
+    inputs = getInputs(process.env.ASSIGN_MAPPINGS !== undefined);
   } catch (error) {
     setFailed(`setting is invalid: ${error.message}`);
 
@@ -26,18 +26,21 @@ async function run() {
     reviewer = findReviewerByLabels(
       pullRequestInfo.labels,
       inputs.assignMappingsStr,
+      [pullRequestInfo.author],
       (max) => Math.floor(Math.random() * max)
     );
-    if (reviewer.length === 0) {
+    if (!reviewer) {
       console.info("No reviewer found.");
       return;
     }
   } catch (error) {
     setFailed(`finding reviewers is failed: ${error.message}`);
+
+    return;
   }
 
   // request reviewers to pull request
-  const octokit = getOctokit(token);
+  const octokit = getOctokit(inputs.githubToken);
   try {
     await octokit.rest.pulls.requestReviewers({
       owner: pullRequestInfo.ownerName,
@@ -47,11 +50,13 @@ async function run() {
     });
   } catch (error) {
     setFailed(`requesting reviewers is failed: ${error.message}`);
+
+    return;
   }
 }
 
 /**
- * @returns {{labels: string[], pullRequestNumber: number, ownerName: string, repoName: string}}
+ * @returns {{labels: string[], pullRequestNumber: number, ownerName: string, repoName: string; author: string}}
  */
 function getPullRequestInfo() {
   const pullRequest = context.payload.pull_request;
@@ -69,14 +74,22 @@ function getPullRequestInfo() {
     pullRequestNumber: pullRequest.number,
     ownerName: context.repo.owner,
     repoName: context.repo.repo,
+    author: pullRequest.user.login,
   };
 }
 
 /**
  * @returns {{assignMappingsStr: string, githubToken: string}}
  */
-function getInputs() {
-  const assignMappingsStr = getInput("assignMappings", { required: true });
+function getInputs(isDev) {
+  if (isDev) {
+    return {
+      assignMappingsStr: process.env.ASSIGN_MAPPINGS,
+      githubToken: process.env.GITHUB_TOKEN,
+    };
+  }
+
+  const assignMappingsStr = getInput("assign-mappings", { required: true });
   const githubToken = getInput("githubToken", { required: true });
 
   return { assignMappingsStr, githubToken };
@@ -86,15 +99,26 @@ function getInputs() {
  *
  * @param {string[]} labels e.g. ["label1", "label2"]
  * @param {string} assignMappingsStr e.g. "label1:[reviewer1,reviewer2],label2:[reviewer3]"
+ * @param {string[]} ignoreUsers
  * @param {(max: number) => number} getRandomInt
  * @return {string | undefined} reviewer
  */
-export function findReviewerByLabels(labels, assignMappingsStr, getRandomInt) {
+export function findReviewerByLabels(
+  labels,
+  assignMappingsStr,
+  ignoreUsers,
+  getRandomInt
+) {
   if (labels.length === 0) return undefined;
 
   const labelsMapping = parseLabelsInput(assignMappingsStr);
 
-  return selectRandomlyReviewersByLabels(labels, labelsMapping, getRandomInt);
+  return selectRandomlyReviewersByLabels(
+    labels,
+    labelsMapping,
+    ignoreUsers,
+    getRandomInt
+  );
 }
 
 /**
@@ -169,15 +193,19 @@ function splitPairs(input) {
 /**
  * @param {string[]} labels
  * @param {{[label: string]: string[]}} labelsMapping
+ * @param {string[]} ignoreUsers
  * @param {(max: number) => number} getRandomInt
  * @returns {string | undefined}
  */
 export function selectRandomlyReviewersByLabels(
   labels,
   labelsMapping,
+  ignoreUsers,
   getRandomInt
 ) {
-  const reviewerCandidates = labels.flatMap((label) => labelsMapping[label]);
+  const reviewerCandidates = labels
+    .flatMap((label) => labelsMapping[label])
+    .filter((reviewer) => !ignoreUsers.includes(reviewer));
 
   if (!reviewerCandidates.length) {
     return undefined;

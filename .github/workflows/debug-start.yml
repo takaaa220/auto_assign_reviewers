@@ -1,0 +1,10 @@
+name: Debug Start
+on: workflow_dispatch
+jobs:
+  run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Debug
+        run: |
+          echo "Debug Start"
