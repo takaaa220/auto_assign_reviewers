@@ -8,6 +8,7 @@ describe("findReviewerByLabels", () => {
         name: "found only one mapping pair",
         labels: ["label1"],
         assignMappingsStr: "label1:[reviewer1,reviewer2], label2:[reviewer3]",
+        ignoreUsers: [],
         getRandomInt: () => 0,
         expected: "reviewer1",
       },
@@ -15,13 +16,23 @@ describe("findReviewerByLabels", () => {
         name: "found multiple mapping pairs",
         labels: ["label1", "label2"],
         assignMappingsStr: "label1:[reviewer1,reviewer2], label2:[reviewer3]",
+        ignoreUsers: [],
         getRandomInt: () => 2,
+        expected: "reviewer3",
+      },
+      {
+        name: "remove ignore users",
+        labels: ["label1", "label2"],
+        assignMappingsStr: "label1:[reviewer1,reviewer2], label2:[reviewer3]",
+        ignoreUsers: ["reviewer2"],
+        getRandomInt: () => 1,
         expected: "reviewer3",
       },
       {
         name: "empty labels",
         labels: [],
         assignMappingsStr: "label1:[reviewer1,reviewer2], label2:[reviewer3]",
+        ignoreUsers: [],
         getRandomInt: () => 0,
         expected: undefined,
       },
@@ -29,14 +40,23 @@ describe("findReviewerByLabels", () => {
         name: "unknown label",
         labels: ["label-unknown"],
         assignMappingsStr: "label1:[reviewer1,reviewer2], label2:[reviewer3]",
+        ignoreUsers: [],
         getRandomInt: () => 0,
         expected: undefined,
       },
-    ])("$name", ({ labels, assignMappingsStr, getRandomInt, expected }) => {
-      const got = findReviewerByLabels(labels, assignMappingsStr, getRandomInt);
+    ])(
+      "$name",
+      ({ labels, assignMappingsStr, ignoreUsers, getRandomInt, expected }) => {
+        const got = findReviewerByLabels(
+          labels,
+          assignMappingsStr,
+          ignoreUsers,
+          getRandomInt
+        );
 
-      expect(got).toBe(expected);
-    });
+        expect(got).toBe(expected);
+      }
+    );
   });
 });
 
