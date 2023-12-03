@@ -20,6 +20,8 @@ async function run() {
     return;
   }
 
+  console.log(JSON.stringify(pullRequestInfo));
+
   // decide reviewers
   let reviewer;
   try {
@@ -34,6 +36,8 @@ async function run() {
     }
   } catch (error) {
     setFailed(`finding reviewers is failed: ${error.message}`);
+
+    return;
   }
 
   // request reviewers to pull request
@@ -47,6 +51,8 @@ async function run() {
     });
   } catch (error) {
     setFailed(`requesting reviewers is failed: ${error.message}`);
+
+    return;
   }
 }
 
