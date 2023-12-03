@@ -13,7 +13,7 @@ async function run() {
   // get inputs
   let inputs;
   try {
-    inputs = getInputs();
+    inputs = getInputs(process.env.ASSIGN_MAPPINGS !== undefined);
   } catch (error) {
     setFailed(`setting is invalid: ${error.message}`);
 
@@ -75,8 +75,15 @@ function getPullRequestInfo() {
 /**
  * @returns {{assignMappingsStr: string, githubToken: string}}
  */
-function getInputs() {
-  const assignMappingsStr = getInput("assignMappings", { required: true });
+function getInputs(isDev) {
+  if (isDev) {
+    return {
+      assignMappingsStr: process.env.ASSIGN_MAPPINGS,
+      githubToken: process.env.GITHUB_TOKEN,
+    };
+  }
+
+  const assignMappingsStr = getInput("assign-mappings", { required: true });
   const githubToken = getInput("githubToken", { required: true });
 
   return { assignMappingsStr, githubToken };

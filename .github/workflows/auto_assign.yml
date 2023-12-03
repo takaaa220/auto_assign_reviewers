@@ -4,7 +4,7 @@ on:
     types: [synchronize]
 
 jobs:
-  build:
+  assign:
     runs-on: ubuntu-latest
 
     steps:
@@ -21,3 +21,6 @@ jobs:
 
       - name: Run workflow in src/index.mjs
         run: node src/index.mjs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ASSIGN_MAPPINGS: "aaa:[x1,x2],bbb:[y1]"
