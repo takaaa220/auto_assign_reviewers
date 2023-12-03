@@ -37,7 +37,7 @@ async function run() {
   }
 
   // request reviewers to pull request
-  const octokit = getOctokit(token);
+  const octokit = getOctokit(inputs.githubToken);
   try {
     await octokit.rest.pulls.requestReviewers({
       owner: pullRequestInfo.ownerName,
