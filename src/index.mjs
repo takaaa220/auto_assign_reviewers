@@ -30,7 +30,7 @@ async function run() {
       inputs.assignMappingsStr,
       (max) => Math.floor(Math.random() * max)
     );
-    if (reviewer.length === 0) {
+    if (!reviewer) {
       console.info("No reviewer found.");
       return;
     }
