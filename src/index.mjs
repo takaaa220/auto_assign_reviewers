@@ -20,8 +20,6 @@ async function run() {
     return;
   }
 
-  console.log(JSON.stringify(pullRequestInfo));
-
   // decide reviewers
   let reviewer;
   try {
